@@ -37,11 +37,11 @@ data "aws_subnets" "private" {
 # --- MODULES ---
 
 module "iam" {
-  source = "/mnt/d/Terraform 2/terraform-eks-cluster/Terraform/modules/iam"
+  source = "../../../modules/iam"
 }
 
 module "eks" {
-  source = "/mnt/d/Terraform 2/terraform-eks-cluster/Terraform/modules/eks/"
+  source = "../../../modules/eks"
 
   cluster_name = var.cluster_name
 
@@ -55,4 +55,5 @@ module "eks" {
   vpc_cidr           = data.aws_vpc.eks_vpc.cidr_block
   public_subnet_ids  = data.aws_subnets.public.ids
   private_subnet_ids = data.aws_subnets.private.ids
+
 }
