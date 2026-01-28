@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Bootstrap Terraform Backend Infrastructure (S3 + DynamoDB)"
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: "Unique name for the S3 bucket to store Terraform state"
+    Default: "tfstate-ironmanav" 
+
+Resources:
+
+  TerraformStateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # 2. The DynamoDB Table for Locking
+  TerraformLockTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "terraform-state-lock"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "LockID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "LockID"
+          KeyType: "HASH"
+
+Outputs:
+  BucketName:
+    Value: !Ref TerraformStateBucket
+    Description: "Use this bucket name in backend.tf"
+  DynamoDBTableName:
+    Value: !Ref TerraformLockTable
+    Description: "Use this table name in backend.tf"
