@@ -60,9 +60,6 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Force Unlock (Temporary Fix)
-        run: terraform force-unlock -force 1d5250dd-e89b-ce78-5f3b-5b13edcee247
-
       - name: Terraform Validate
         run: terraform validate
 
