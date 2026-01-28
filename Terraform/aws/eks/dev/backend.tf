@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket         = "tfstate-ironmanav2" 
-    key            = "path/to/myproject.tfstate"             
+    bucket         = "tfstate-ironmanav" 
+    key            = "eks/terraform.tfstate"             
     region         = "us-east-2"        
     dynamodb_table = "terraform-state-lock"                
     encrypt        = true                                    
