@@ -110,7 +110,7 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: 🏥 Check VPC
+      - name: Check VPC
         working-directory: ./Terraform/aws/vpc/dev
         run: |
           terraform init
