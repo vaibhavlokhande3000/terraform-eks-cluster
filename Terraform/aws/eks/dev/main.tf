@@ -51,9 +51,10 @@ module "eks" {
   node_role_arn    = module.iam.node_role_arn
 
   # Passing Network Info found via Data Sources
-  
+  vpc_id             = data.aws_vpc.eks_vpc.id
   vpc_cidr           = data.aws_vpc.eks_vpc.cidr_block
   public_subnet_ids  = data.aws_subnets.public.ids
   private_subnet_ids = data.aws_subnets.private.ids
 
 }
+
