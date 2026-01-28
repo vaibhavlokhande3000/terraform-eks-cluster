@@ -1,124 +1,124 @@
-# name: "Automated Infrastructure Deploy"
+name: "Automated Infrastructure Deploy"
 
-# on:
-#   push:
-#     branches:
-#       - main
-#     paths:
-#       - 'Terraform/**'
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Terraform/**'
 
-# permissions:
-#   id-token: write
-#   contents: read
+permissions:
+  id-token: write
+  contents: read
 
-# env:
-#   AWS_REGION: us-east-2
-#   TF_VERSION: 1.5.0
+env:
+  AWS_REGION: us-east-2
+  TF_VERSION: 1.5.0
 
-# jobs:
-#   # 1. DETECT CHANGES
+jobs:
+  # 1. DETECT CHANGES
 
-#   check-changes:
-#     runs-on: ubuntu-latest
-#     outputs:
-#       vpc: ${{ steps.filter.outputs.vpc }}
-#       eks: ${{ steps.filter.outputs.eks }}
-#     steps:
-#       - uses: actions/checkout@v4
-#       - uses: dorny/paths-filter@v2
-#         id: filter
-#         with:
-#           filters: |
-#             vpc:
-#               - 'Terraform/aws/vpc/dev/**'
-#               - 'Terraform/modules/vpc/**'
-#             eks:
-#               - 'Terraform/aws/eks/dev/**'
-#               - 'Terraform/modules/eks/**'
-#               - 'Terraform/modules/iam/**'
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      vpc: ${{ steps.filter.outputs.vpc }}
+      eks: ${{ steps.filter.outputs.eks }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            vpc:
+              - 'Terraform/aws/vpc/dev/**'
+              - 'Terraform/modules/vpc/**'
+            eks:
+              - 'Terraform/aws/eks/dev/**'
+              - 'Terraform/modules/eks/**'
+              - 'Terraform/modules/iam/**'
 
-#   # VPC CHANGED 
-#   # Trigger = VPC files changed
-#   # Destroy EKS -> Apply VPC -> Re-apply EKS.
+  # VPC CHANGED 
+  # Trigger = VPC files changed
+  # Destroy EKS -> Apply VPC -> Re-apply EKS.
 
-#   handle-vpc-changes:
-#     needs: check-changes
-#     if: ${{ needs.check-changes.outputs.vpc == 'true' }}
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
+  handle-vpc-changes:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.vpc == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: ${{ env.TF_VERSION }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
 
-#       # Destroy EKS
+      # Destroy EKS
 
-#       - name: Destroy EKS
-#         working-directory: ./Terraform/aws/eks/dev
-#         run: |
-#           terraform init
-#           terraform destroy -auto-approve
+      - name: Destroy EKS
+        working-directory: ./Terraform/aws/eks/dev
+        run: |
+          terraform init
+          terraform destroy -auto-approve
 
-#       # Apply VPC
+      # Apply VPC
 
-#       - name: Apply VPC
-#         working-directory: ./Terraform/aws/vpc/dev
-#         run: |
-#           terraform init
-#           terraform apply -auto-approve
+      - name: Apply VPC
+        working-directory: ./Terraform/aws/vpc/dev
+        run: |
+          terraform init
+          terraform apply -auto-approve
 
-#       # Step C: Re-Apply EKS
+      # Step C: Re-Apply EKS
 
-#       - name: Apply EKS
-#         working-directory: ./Terraform/aws/eks/dev
-#         run: |
-#           terraform init
-#           terraform apply -auto-approve
+      - name: Apply EKS
+        working-directory: ./Terraform/aws/eks/dev
+        run: |
+          terraform init
+          terraform apply -auto-approve
 
-#   # 3. EKS Updated
+  # 3. EKS Updated
 
-#   # Check VPC is alive -> Apply EKS updates.
+  # Check VPC is alive -> Apply EKS updates.
 
-#   handle-eks-changes:
-#     needs: check-changes
-#     # Run only if EKS changed AND VPC did NOT change.
-#     if: ${{ needs.check-changes.outputs.eks == 'true' && needs.check-changes.outputs.vpc == 'false' }}
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
+  handle-eks-changes:
+    needs: check-changes
+    # Run only if EKS changed AND VPC did NOT change.
+    if: ${{ needs.check-changes.outputs.eks == 'true' && needs.check-changes.outputs.vpc == 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v3
-#         with:
-#           terraform_version: ${{ env.TF_VERSION }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
 
-#       - name: Check VPC
-#         working-directory: ./Terraform/aws/vpc/dev
-#         run: |
-#           terraform init
-#           terraform apply -auto-approve
+      - name: Check VPC
+        working-directory: ./Terraform/aws/vpc/dev
+        run: |
+          terraform init
+          terraform apply -auto-approve
 
-#       # Apply EKS Updates
-#       - name: Apply EKS
-#         working-directory: ./Terraform/aws/eks/dev
-#         run: |
-#           terraform init
-#           terraform apply -auto-approve
+      # Apply EKS Updates
+      - name: Apply EKS
+        working-directory: ./Terraform/aws/eks/dev
+        run: |
+          terraform init
+          terraform apply -auto-approve
