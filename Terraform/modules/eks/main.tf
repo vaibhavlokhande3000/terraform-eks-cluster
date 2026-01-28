@@ -1,4 +1,4 @@
-resource "aws_eks_cluster" "this" {
+resources "aws_eks_cluster" "this" {
   name     = var.cluster_name
   role_arn = var.cluster_role_arn
 
@@ -10,7 +10,7 @@ vpc_config {
   }
 }
 
-resource "aws_eks_node_group" "this" {
+resources "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this.name
   node_group_name = "private-node-group"
   node_role_arn   = var.node_role_arn
@@ -28,7 +28,7 @@ instance_types = ["t2.medium"]
 ###Adding sg
 
 # Security Group
-resource "aws_security_group" "app_sg" {
+resources "aws_security_group" "app_sg" {
   name        = "${var.cluster_name}-app-sg"
   description = "Allow ports 5000 and 8080"
   vpc_id      = var.vpc_id
@@ -60,7 +60,7 @@ resource "aws_security_group" "app_sg" {
 }
 
 # Attach it to the Cluster
-resource "aws_eks_cluster" "this" {
+resources "aws_eks_cluster" "this" {
   name     = var.cluster_name
   role_arn = var.cluster_role_arn
 
@@ -78,3 +78,4 @@ depends_on = [
   ]
 
 }
+
