@@ -5,7 +5,7 @@ Parameters:
   BucketName:
     Type: String
     Description: "Unique name for the S3 bucket to store Terraform state"
-    Default: "tfstate-ironmanav" 
+    Default: "tfstate-ironmanav-ve3" 
 
 Resources:
 
