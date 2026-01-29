@@ -1,14 +1,12 @@
-name: "Deploy Backend S3 & DynamoDB"
+name: "Deploy S3 & DynamoDB"
 
 on:
   workflow_dispatch:
     inputs:
       aws_region:
-        description: 'AWS Region'
         required: true
         default: 'us-east-2'
       bucket_name:
-        description: 'S3 Bucket Name (Must be globally unique)'
         required: true
         default: 'tfstate-ironmanav-ve3'
 
@@ -34,17 +32,8 @@ jobs:
 
       - name: Deploy CloudFormation Stack
         run: |
-          echo "Deploying CloudFormation stack..."
           aws cloudformation deploy \
             --template-file Terraform/aws/backend_s3.yml \
             --stack-name terraform-backend-bootstrap \
             --parameter-overrides BucketName=${{ inputs.bucket_name }} \
-            --capabilities CAPABILITY_NAMED_IAM \
             --no-fail-on-empty-changeset
-
-      - name: Verify Deployment
-        run: |
-          echo "Verifying S3 Bucket..."
-          aws s3 ls | grep ${{ inputs.bucket_name }}
-          echo "Verifying DynamoDB Table..."
-          aws dynamodb describe-table --table-name terraform-state-lock --region ${{ inputs.aws_region }} --query "Table.TableStatus"
