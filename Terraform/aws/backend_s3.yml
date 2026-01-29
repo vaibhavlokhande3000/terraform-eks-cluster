@@ -41,7 +41,5 @@ Resources:
 Outputs:
   BucketName:
     Value: !Ref TerraformStateBucket
-    Description: "Use this bucket name in backend.tf"
   DynamoDBTableName:
     Value: !Ref TerraformLockTable
-    Description: "Use this table name in backend.tf"
