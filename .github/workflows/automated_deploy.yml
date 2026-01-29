@@ -14,6 +14,7 @@ permissions:
 env:
   AWS_REGION: us-east-2
   TF_VERSION: 1.5.0
+  BACKEND_BUCKET_NAME: 'tfstate-ironmanav-ve3'
 
 jobs:
   # 1. DETECT CHANGES
@@ -36,6 +37,38 @@ jobs:
               - 'Terraform/aws/eks/dev/**'
               - 'Terraform/modules/eks/**'
               - 'Terraform/modules/iam/**'
+
+  ensure-backend:
+    needs: check-changes
+    # Run if EITHER vpc or eks changed
+    if: ${{ needs.check-changes.outputs.vpc == 'true' || needs.check-changes.outputs.eks == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Check and Deploy S3 Backend
+        run: |
+          # 1. Check if bucket exists
+          if aws s3api head-bucket --bucket "${{ env.BACKEND_BUCKET_NAME }}" 2>/dev/null; then
+            echo " Backend bucket '${{ env.BACKEND_BUCKET_NAME }}' already exists. Skipping creation."
+          else
+            echo "Bucket '${{ env.BACKEND_BUCKET_NAME }}' not found. Deploying CloudFormation stack..."
+            
+            # 2. Deploy CloudFormation if bucket is missing
+            aws cloudformation deploy \
+              --template-file Terraform/aws/backend_s3.yml \
+              --stack-name terraform-backend-bootstrap \
+              --parameter-overrides BucketName=${{ env.BACKEND_BUCKET_NAME }} \
+              --no-fail-on-empty-changeset
+          fi
 
   # VPC CHANGED 
   # Trigger = VPC files changed
