@@ -120,4 +120,7 @@ resource "helm_release" "cluster_autoscaler" {
     name  = "awsRegion"
     value = var.region
   }
+
 }
+
+#
