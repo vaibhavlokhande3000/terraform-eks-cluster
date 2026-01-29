@@ -69,3 +69,35 @@ resource "aws_iam_role_policy_attachment" "node_AmazonSSMManagedInstanceCore" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.node_role.name
 }
+
+#auto scalar policy
+
+resource "aws_iam_policy" "autoscaler_policy" {
+  name        = "eks-cluster-autoscaler-policy"
+  description = "Allow worker nodes to scale the cluster"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeTags",
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup",
+          "ec2:DescribeLaunchTemplateVersions"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach policy directly to the Node Role
+resource "aws_iam_role_policy_attachment" "node_autoscaler_attach" {
+  policy_arn = aws_iam_policy.autoscaler_policy.arn
+  role       = aws_iam_role.node_role.name
+}
