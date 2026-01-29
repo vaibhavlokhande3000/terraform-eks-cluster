@@ -72,7 +72,6 @@ module "eks" {
 ############################################
 # HELM RELEASES
 
-
 # 1. Metrics Server
 
 resource "helm_release" "metrics_server" {
@@ -82,12 +81,12 @@ resource "helm_release" "metrics_server" {
   namespace  = "kube-system"
   version    = "3.12.1"
 
-}
+  
   set {
     name  = "metrics.enabled"
     value = false
   }
-
+} 
 
 # Cluster Autoscaler
 resource "helm_release" "cluster_autoscaler" {
@@ -97,15 +96,12 @@ resource "helm_release" "cluster_autoscaler" {
   namespace  = "kube-system"
   version    = "9.37.0"
 
-
-
   set {
     name  = "autoDiscovery.clusterName"
     value = var.cluster_name
   }
 
-
-set {
+  set {
     name  = "awsRegion"
     value = var.region
   }
