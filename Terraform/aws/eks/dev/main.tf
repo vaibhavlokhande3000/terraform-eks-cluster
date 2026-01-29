@@ -30,7 +30,7 @@ data "aws_subnets" "private" {
   }
   filter {
     name   = "tag:Name"
-    values = ["${var.cluster_name}-private"]
+    values = ["${var.cluster_name}-private-*"]
   }
 }
 
@@ -60,6 +60,7 @@ module "eks" {
 
 
 #####
+
 
 
 
